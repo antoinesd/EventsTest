@@ -19,14 +19,14 @@ import javax.inject.Inject;
  */
 
 @RunWith(Arquillian.class)
-public class EventTest {
+public class SimpleEventTest {
 
     @Deployment
     public static Archive<?> createTestArchive() throws FileNotFoundException {
 
         WebArchive ret = ShrinkWrap
                 .create(WebArchive.class, "test.war")
-                .addClasses(ObservingBean.class,
+                .addClasses(SimpleObservingBean.class,
                         Payload.class,
                         Qualified.class,
                         QualifiedLiteral.class,
@@ -40,49 +40,76 @@ public class EventTest {
 
 
     @Inject
-    //@Any
-            Event<Payload> payLoadEvent;
+    Event<Payload> payloadEvent;
+
+    @Inject
+    @Qualified
+    Event<Payload> qualifiedPayloadEvent;
+
+
+    @Test
+    public void shouldResolveThreeTypeObserver() {
+        SubPayload myPl = new SubPayload();
+        payloadEvent.select(SubPayload.class).fire(myPl); //select useless with Weld 2
+
+        Assert.assertEquals(13, myPl.content);
+    }
 
     @Test
     public void shouldResolveUnqualifiedObserver() {
         Payload myPl = new Payload();
-        payLoadEvent.fire(myPl);
+        payloadEvent.fire(myPl);
 
-        Assert.assertEquals(10, myPl.content);
+        Assert.assertEquals(11, myPl.content);
     }
 
 
     @Test
     public void shouldResolvedQualifiedAndUnqualifiedObserver() {
         Payload myPl = new Payload();
-        payLoadEvent.select(new QualifiedLiteral()).fire(myPl);
+        payloadEvent.select(new QualifiedLiteral()).fire(myPl);
 
-        Assert.assertEquals(110, myPl.content);
+        Assert.assertEquals(111, myPl.content);
+    }
+
+    @Test
+    public void shouldResolvedQualifiedAndUnqualifiedObserver2() {
+        Payload myPl = new Payload();
+        qualifiedPayloadEvent.fire(myPl);
+
+        Assert.assertEquals(111, myPl.content);
     }
 
     @Test
     public void shouldResolvedQualifiedWithParamAndUnqualifiedObserver() {
         Payload myPl = new Payload();
-        payLoadEvent.select(new QualifiedLiteral("special")).fire(myPl);
+        payloadEvent.select(new QualifiedLiteral("special")).fire(myPl);
 
-        Assert.assertEquals(120, myPl.content);
+        Assert.assertEquals(121, myPl.content);
     }
 
+    @Test
+    public void shouldResolvedQualifiedWithParamAndUnqualifiedObserver2() {
+        Payload myPl = new Payload();
+        qualifiedPayloadEvent.select(new QualifiedLiteral("special")).fire(myPl);
+
+        Assert.assertEquals(221, myPl.content);
+    }
 
     @Test
     public void shouldResolvedQualifiedAgainAndUnqualifiedObserver() {
         Payload myPl = new Payload();
-        payLoadEvent.select(new QualifiedAgainLiteral()).fire(myPl);
+        payloadEvent.select(new QualifiedAgainLiteral()).fire(myPl);
 
-        Assert.assertEquals(1010, myPl.content);
+        Assert.assertEquals(1011, myPl.content);
     }
 
 
     @Test
     public void shouldResolvedQualifiedQualifiedAgainAndUnqualifiedObserver() {
         Payload myPl = new Payload();
-        payLoadEvent.select(new QualifiedAgainLiteral(), new QualifiedLiteral()).fire(myPl);
+        payloadEvent.select(new QualifiedAgainLiteral(), new QualifiedLiteral()).fire(myPl);
 
-        Assert.assertEquals(11110, myPl.content);
+        Assert.assertEquals(11111, myPl.content);
     }
 }

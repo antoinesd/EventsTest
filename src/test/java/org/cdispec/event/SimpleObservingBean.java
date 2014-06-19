@@ -5,12 +5,16 @@ import javax.enterprise.event.Observes;
 /**
  * @author Antoine Sabot-Durand
  */
-public class ObservingBean {
+public class SimpleObservingBean {
 
 
     public void observesAllPayloads(@Observes Payload pl) {
         pl.content += 10;
     }
+    
+    public void observesAllSubPayloads(@Observes SubPayload pl) {
+            pl.content += 2;
+        }
 
     public void observesSimplyQualifiedPayloads(@Observes @Qualified Payload pl) {
         pl.content += 100;
@@ -28,4 +32,8 @@ public class ObservingBean {
         pl.content += 10000;
     }
 
+    public void observesObject(@Observes Object pl) {
+        if(pl instanceof Payload)
+            ((Payload)pl).content += 1;
+        }
 }
